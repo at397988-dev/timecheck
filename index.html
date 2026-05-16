@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>出勤・退勤 System</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial, sans-serif;
+    background:#0f172a;
+    color:white;
+    padding:30px;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:30px;
+    font-size:40px;
+}
+
+/* DROPDOWN BUTTON */
+.dropdown-header{
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width:50px;
+    height:50px;
+    background:#1f2937;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    border-radius:10px;
+    cursor:pointer;
+    z-index:1000;
+    flex-direction:column;
+}
+
+/* MENU */
+.menu{
+    position:absolute;
+    top:60px;
+    right:0;
+    width:160px;
+    background:#1e293b;
+    border-radius:10px;
+    overflow:hidden;
+    display:none;
+    box-shadow:0 10px 20px rgba(0,0,0,0.4);
+}
+
+.menu div{
+    padding:12px;
+    border-bottom:1px solid #334155;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.menu div:hover{
+    background:#334155;
+}
+
+.menu a{
+    color:white;
+    text-decoration:none;
+}
+
+.dropdown-header i{
+    font-size:22px;
+    color:white;
+}
+
+/* INFO BOX */
+.info-box{
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-bottom:25px;
+}
+
+.info-box input{
+    flex:1;
+    min-width:200px;
+    padding:14px;
+    border:none;
+    border-radius:10px;
+    font-size:16px;
+    outline:none;
+}
+
+/* BUTTONS */
+.btn-box{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:15px;
+    margin-bottom:30px;
+}
+
+button{
+    padding:14px 35px;
+    border:none;
+    border-radius:10px;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{
+    transform:scale(1.05);
+}
+
+.start-btn{
+    background:#22c55e;
+    color:white;
+}
+
+.end-btn{
+    background:#ef4444;
+    color:white;
+}
+
+#statusMsg{
+    font-size:18px;
+    font-weight:bold;
+    opacity:0;
+    transition:0.6s ease;
+    margin-left:10px;
+}
+
+#statusMsg.show{
+    opacity:1;
+}
+
+/* TABLE ANIMATION */
+.table-box{
+    max-height:0;
+    overflow:hidden;
+    opacity:0;
+    transform:scaleY(0);
+    transform-origin:top;
+    transition: all 0.6s ease;
+}
+
+.table-box.show{
+    max-height:800px;
+    opacity:1;
+    transform:scaleY(1);
+}
+
+/* TABLE */
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    color:black;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+th{
+    background:#1e293b;
+    color:white;
+}
+
+th, td{
+    border:1px solid #d1d5db;
+    padding:14px;
+    text-align:center;
+}
+
+/* SUMMARY */
+.summary{
+    width: 40%;
+    margin: 40px auto 0 auto;
+    background:#1e293b;
+    padding:25px;
+    border-radius:12px;
+    text-align:center;
+} 
+.table-box {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px; /* forces scroll on mobile */
+}
+
+th, td {
+  padding: 10px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid #ddd;
+}
+</style>
+</head>
+
+<body>
+
+<!-- DROPDOWN -->
+<div class="dropdown-header" onclick="toggleMenu()">
+    <i class="fa-solid fa-list"></i>
+
+    <div id="menu" class="menu">
+        <div><a href="https://at397988-dev.github.io/created-/">created ID</a></div>
+        <div><a href="https://at397988-dev.github.io/login/">login</a></div>
+        <div><a href="https://at397988-dev.github.io/ANILNEPAL/">Forgot</a></div>
+
+        <!-- FIXED -->
+        <div onclick="toggleTable(); toggleMenu()">time table</div>
+    </div>
+</div>
+
+<div class="container">
+
+    <h1>出勤・退勤 管理 System</h1>
+
+    <div class="info-box">
+        <input type="text" id="company" placeholder="Company Name">
+        <input type="text" id="code" placeholder="Company Code">
+        <input type="text" id="employee" placeholder="Your Name">
+    </div>
+
+    <div class="btn-box">
+        <button class="start-btn" onclick="startWork()">出勤</button>
+        <button class="end-btn" onclick="endWork()">退勤</button>
+        <span id="statusMsg"></span>
+    </div>
+
+    <!-- TABLE -->
+    <div id="tableBox" class="table-box">
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Company</th>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>出勤時間</th>
+                    <th>退勤時間</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="summary">
+        <h2>Monthly Summary</h2>
+        <p>Total Work Time : <strong id="totalWork">0</strong> hrs</p>
+    </div>
+
+</div>
+
+<script>
+
+function toggleMenu(){
+    let menu = document.getElementById("menu");
+    menu.style.display = (menu.style.display === "block") ? "none" : "block";
+}
+
+/* FIXED TABLE TOGGLE */
+function toggleTable(){
+    document.getElementById("tableBox").classList.toggle("show");
+}
+
+/* MESSAGE */
+function showMessage(text, color){
+    let msg = document.getElementById("statusMsg");
+    msg.innerText = text;
+    msg.style.color = color;
+    msg.classList.add("show");
+
+    setTimeout(() => {
+        msg.classList.remove("show");
+    }, 2500);
+}
+
+let activeRow = null;
+let total = 0;
+
+/* START */
+function startWork(){
+    let company = document.getElementById("company").value;
+    let code = document.getElementById("code").value;
+    let name = document.getElementById("employee").value;
+
+    if(!company || !code || !name){
+        alert("Please fill all fields");
+        return;
+    }
+
+    if(activeRow){
+        alert("Already checked in!");
+        return;
+    }
+
+    let now = new Date();
+    let table = document.getElementById("tableBody");
+
+    let row = table.insertRow();
+    row.dataset.startTime = now.getTime();
+
+    row.innerHTML = `
+        <td>${now.toLocaleDateString()}</td>
+        <td>${company}</td>
+        <td>${code}</td>
+        <td>${name}</td>
+        <td>${now.toLocaleTimeString()}</td>
+        <td>-</td>
+        <td>Working</td>
+    `;
+
+    activeRow = row;
+
+    showMessage("出勤中...", "#22c55e");
+}
+
+/* END */
+function endWork(){
+    if(!activeRow){
+        alert("No active check-in found");
+        return;
+    }
+
+    let end = new Date();
+    let start = new Date(parseInt(activeRow.dataset.startTime));
+
+    let hours = (end - start) / (1000 * 60 * 60);
+
+    activeRow.cells[5].innerText = end.toLocaleTimeString();
+    activeRow.cells[6].innerText = "Completed (" + hours.toFixed(2) + " hrs)";
+
+    total += hours;
+    document.getElementById("totalWork").innerText = total.toFixed(2);
+
+    activeRow = null;
+
+    showMessage("退勤完了", "#ef4444");
+}
+
+</script>
+
+</body>
+</html>
